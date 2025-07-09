@@ -1,0 +1,20 @@
+# requirements.txt for Robust Orchestrator backend
+
+# FastAPI and WebSocket dependencies
+fastapi==0.103.0
+uvicorn==0.23.2
+
+# LangGraph and LangChain for agentic workflow
+langchain==0.0.123
+langgraph
+
+# RAG knowledge base dependencies
+sentence-transformers==2.2.2
+faiss-cpu==1.7.4
+
+# Geospatial processing dependencies
+gdal==3.6.2
+qgis==3.22.4  # Requires specific installation (see notes below)
+
+# General dependencies
+pydantic==1.10.7
