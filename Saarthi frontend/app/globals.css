@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Enhanced space-themed background */
+.space-bg {
+  background: radial-gradient(ellipse at top, #1e1b4b 0%, #0f0f23 50%, #000000 100%),
+    radial-gradient(ellipse at bottom, #312e81 0%, #1e1b4b 50%, #0f0f23 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.space-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(1px 1px at 25px 5px, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 50px 25px, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 125px 20px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 200px 75px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(2px 2px at 90px 40px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(59, 130, 246, 0.4), transparent),
+    radial-gradient(1px 1px at 300px 120px, rgba(168, 85, 247, 0.3), transparent),
+    radial-gradient(1px 1px at 20px 150px, rgba(34, 197, 94, 0.2), transparent);
+  background-repeat: repeat;
+  background-size: 350px 200px;
+  animation: starfield 20s linear infinite;
+}
+
+.space-bg::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse 800px 600px at 50% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 600px 400px at 80% 100%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 400px 300px at 20% 50%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+@keyframes starfield {
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(-200px);
+  }
+}
+
+/* Nebula effect */
+.nebula-bg {
+  background: radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 40%, rgba(34, 197, 94, 0.1) 0%, transparent 50%);
+  animation: nebula-drift 30s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift {
+  0% {
+    transform: translateX(-10px) translateY(-5px);
+  }
+  100% {
+    transform: translateX(10px) translateY(5px);
+  }
+}
+
+.indian-gradient {
+  background: linear-gradient(135deg, #ff9933 0%, #ffffff 50%, #138808 100%);
+}
+
+.isro-blue {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
+}
+
+.cosmic-card {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.glow-effect {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Custom animations for enhanced navigation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 8s linear infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Enhanced glassmorphism effects */
+.glass-nav {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Modern glassmorphism navigation */
+.modern-nav {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Gradient border animation */
+@keyframes gradient-border {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.gradient-border {
+  background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
+  background-size: 400% 400%;
+  animation: gradient-border 3s ease infinite;
+}
+
+/* Enhanced hover effects */
+.nav-item-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item-hover::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.nav-item-hover:hover::before {
+  left: 100%;
+}
+
+/* Remove all underline animations */
+* {
+  text-decoration: none !important;
+}
+
+a,
+a:hover,
+a:focus,
+a:active,
+a:visited {
+  text-decoration: none !important;
+}
+
+.no-underline,
+.no-underline * {
+  text-decoration: none !important;
+}
+
+.no-underline::before,
+.no-underline::after {
+  display: none !important;
+}
+
+/* Modern button hover effects */
+.modern-hover {
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+/* Unique pulsing effect for logo elements */
+@keyframes unique-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.unique-pulse {
+  animation: unique-pulse 2s ease-in-out infinite;
+}
+
+/* Custom bounce with delay */
+@keyframes orbital-bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-8px);
+  }
+  60% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-bounce {
+  animation: orbital-bounce 2s infinite;
+}
