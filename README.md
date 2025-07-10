@@ -2,7 +2,7 @@
 
 # 🛰️ Saarthi AI: Your Digital Charioteer for Geospatial Intelligence
 
-**A project for the Bharatiya Antariksh Hackathon**
+**A project for the Bharatiya Antariksh Hackathon 2025**
 
 </div>
 
