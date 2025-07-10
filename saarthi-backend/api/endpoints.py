@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
-from agent.graph import get_agent_graph
+from saarthi_backend.agent.graph import get_agent_graph
 
 app = FastAPI()
 
