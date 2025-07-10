@@ -1,7 +1,9 @@
 import os
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings # Changed from OpenAI
+from langchain_huggingface import HuggingFaceEmbeddings # <-- UPDATED THIS IMPORT
+
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from dotenv import load_dotenv
 
