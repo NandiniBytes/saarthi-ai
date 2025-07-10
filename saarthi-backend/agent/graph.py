@@ -1,11 +1,14 @@
+# =================================================================
+# File: saarthi-backend/agent/graph.py
+# =================================================================
 # This is the core of the "Robust Orchestrator" agent.
+# This version is updated to use the native Groq Python SDK instead of the LangChain integration.
 
 import os
 from typing import TypedDict, List
-from langchain_groq import ChatGroq # Changed from OpenAI
-from langchain_community.embeddings import HuggingFaceEmbeddings # Changed from OpenAI
+from groq import Groq # Updated import
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_core.prompts import PromptTemplate
 from langgraph.graph import StateGraph, END
 from dotenv import load_dotenv
 
@@ -25,12 +28,18 @@ class AgentState(TypedDict):
     chat_history: List[str]
 
 # --- LLM and Vector Store Initialization ---
+# Instantiate the native Groq client
 # The API key is read automatically from the GROQ_API_KEY environment variable
-llm = ChatGroq(temperature=0, model_name="llama3-8b-8192")
+client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY"),
+)
+# Using a powerful and versatile model
+MODEL_NAME = "llama3-70b-8192"
+
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 # Load the knowledge base
-FAISS_INDEX_PATH = "knowledge_base/faiss_index"
+FAISS_INDEX_PATH = "saarthi_backend/knowledge_base/knowledge_base/faiss_index"
 if not os.path.exists(FAISS_INDEX_PATH):
     raise FileNotFoundError(
         "FAISS index not found. Please run 'python knowledge_base/build_kb.py' first."
@@ -43,15 +52,24 @@ retriever = vectorstore.as_retriever()
 def plan_node(state: AgentState):
     """Generates the initial or revised plan."""
     print("--- (NODE) PLAN ---")
-    prompt = PromptTemplate(
-        template=prompts.PLAN_PROMPT,
-        input_variables=["user_query", "chat_history"],
+    
+    # Format the prompt string directly
+    prompt = prompts.PLAN_PROMPT.format(
+        user_query=state["user_query"],
+        chat_history="\n".join(state["chat_history"])
     )
-    chain = prompt | llm
-    plan_str = chain.invoke({
-        "user_query": state["user_query"],
-        "chat_history": "\n".join(state["chat_history"])
-    }).content
+
+    # Make the API call using the native Groq client
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model=MODEL_NAME,
+    )
+    plan_str = chat_completion.choices[0].message.content
     
     plan_list = [step for step in plan_str.split("\n") if step.strip() and step.strip()[0].isdigit()]
     return {"plan": plan_list, "executed_steps": []}
@@ -60,26 +78,31 @@ def code_generation_node(state: AgentState):
     """Generates Python code for the next step in the plan."""
     print("--- (NODE) GENERATE CODE ---")
     
-    # Get the next step to execute
     next_step_index = len(state.get("executed_steps", []))
     if next_step_index >= len(state["plan"]):
-        return { "code": None } # Plan is complete
+        return { "code": None }
 
     current_step = state["plan"][next_step_index]
-
-    # Retrieve relevant docs
     retrieved_docs = retriever.invoke(current_step)
     docs_str = "\n\n".join([doc.page_content for doc in retrieved_docs])
 
-    prompt = PromptTemplate(
-        template=prompts.CODE_GENERATION_PROMPT,
-        input_variables=["plan_step", "retrieved_docs"],
+    # Format the prompt string directly
+    prompt = prompts.CODE_GENERATION_PROMPT.format(
+        plan_step=current_step,
+        retrieved_docs=docs_str
     )
-    chain = prompt | llm
-    code = chain.invoke({
-        "plan_step": current_step,
-        "retrieved_docs": docs_str
-    }).content.strip('`').strip('python').strip()
+
+    # Make the API call using the native Groq client
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model=MODEL_NAME,
+    )
+    code = chat_completion.choices[0].message.content.strip('`').strip('python').strip()
     
     return {"code": code}
 
@@ -101,20 +124,28 @@ def execute_code_node(state: AgentState):
 def error_handler_node(state: AgentState):
     """Handles errors by generating a new plan."""
     print("--- (NODE) HANDLE ERROR ---")
-    prompt = PromptTemplate(
-        template=prompts.ERROR_HANDLER_PROMPT,
-        input_variables=["user_query", "failed_code", "error_message"],
+
+    # Format the prompt string directly
+    prompt = prompts.ERROR_HANDLER_PROMPT.format(
+        user_query=state["user_query"],
+        failed_code=state["code"],
+        error_message=state["error_message"]
     )
-    chain = prompt | llm
-    new_plan_str = chain.invoke({
-        "user_query": state["user_query"],
-        "failed_code": state["code"],
-        "error_message": state["error_message"]
-    }).content
+
+    # Make the API call using the native Groq client
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model=MODEL_NAME,
+    )
+    new_plan_str = chat_completion.choices[0].message.content
     
     new_plan_list = [step for step in new_plan_str.split("\n") if step.strip() and step.strip()[0].isdigit()]
     
-    # Reset state for the new plan
     return {
         "plan": new_plan_list,
         "executed_steps": [],
@@ -148,16 +179,13 @@ def get_agent_graph():
     """Builds and returns the LangGraph agent."""
     workflow = StateGraph(AgentState)
 
-    # Add nodes
     workflow.add_node("plan", plan_node)
     workflow.add_node("generate_code", code_generation_node)
     workflow.add_node("execute_code", execute_code_node)
     workflow.add_node("handle_error", error_handler_node)
 
-    # Set entry point
     workflow.set_entry_point("plan")
 
-    # Add edges
     workflow.add_edge("plan", "generate_code")
     workflow.add_edge("generate_code", "execute_code")
     workflow.add_conditional_edges(
@@ -171,6 +199,5 @@ def get_agent_graph():
     )
     workflow.add_edge("handle_error", "generate_code")
 
-    # Compile the graph
     app = workflow.compile()
     return app
