@@ -4,7 +4,7 @@
 # Main entry point for the FastAPI application.
 
 import uvicorn
-from api.endpoints import app
+from saarthi_backend.api.endpoints import app
 
 # The 'if __name__ == "__main__":' block ensures this code only runs
 # when you execute this file directly (e.g., `python main.py`).
