@@ -1,7 +1,7 @@
 import os
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings # <-- UPDATED THIS IMPORT
+from langchain_community.embeddings import HuggingFaceEmbeddings  # <-- FIXED IMPORT
 
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -18,7 +18,7 @@ URLS_TO_SCRAPE = [
     "https://docs.qgis.org/3.34/en/docs/pyqgis_developer_cookbook/processing.html"
 ]
 
-FAISS_INDEX_PATH = "knowledge_base/faiss_index"
+FAISS_INDEX_PATH = "saarthi_backend/knowledge_base/knowledge_base/faiss_index"
 
 def build_knowledge_base():
     """
