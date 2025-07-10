@@ -32,7 +32,7 @@ Saarthi is built on a foundation of cutting-edge AI techniques to emulate the wo
 
 * **🧠 Natural Language Reasoning:** Ask complex questions in plain English. Saarthi decomposes your high-level goal into a logical sequence of actions.
 * **📝 Transparent Chain-of-Thought (CoT) Planning:** Watch Saarthi "think" in real-time. The UI displays its step-by-step plan, providing complete transparency into its reasoning process.
-* **🛠️ RAG-Powered Tool Mastery:** Saarthi uses Retrieval-Augmented Generation (RAG) to consult a knowledge base of GIS tool documentation (GDAL, PyQGIS), ensuring it generates accurate, executable code every time.
+* **🛠️ RAG-Powered Tool Mastery:** Saarthi uses Retrieval-Augmented Generation (RAG) to consult a knowledge base of GIS tool documentation (GDAL), ensuring it generates accurate, executable code every time.
 * **🔄 Robust Self-Correction Loop:** This is Saarthi's superpower. When real-world data issues cause an error (like a CRS mismatch), Saarthi doesn't crash. It analyzes the error, formulates a new plan to fix it (e.g., "I will reproject the layer"), and re-attempts the task.
 * **🌐 Multi-Source Data Integration:** Seamlessly orchestrates data access from sources like ISRO's Bhuvanidhi portal and OpenStreetMap.
 
@@ -42,82 +42,110 @@ Saarthi is implemented as a stateful, cyclical graph using LangGraph. This archi
 
 ```mermaid
 graph TD
-    A[Start: User Query] --> B{PLAN};
-    B --> C{SELECT TOOL & GENERATE CODE};
-    C --> D[EXECUTE CODE];
-    D --> E{Check for Errors};
-    E -- Success --> B;
-    E -- Failure --> F[HANDLE ERROR];
-    F --> B;
-    B -- Plan Complete --> G[End: Output Map];
-````
+    subgraph "Saarthi AI - Agentic Core"
+        A[PLAN] -->|1. Create/Update Plan| B[SELECT_TOOL]
+        B -->|2. Retrieve Docs RAG| C[GENERATE_CODE]
+        C -->|3. Generate Python Script| D[EXECUTE_CODE]
+        D -->|4. Capture stdout/stderr| E{Check Result}
+        E -- Success --> A
+        E -- Error Detected --> F[HANDLE_ERROR]
+        F -->|6. Generate Corrective Plan| A
+    end
+    
+    subgraph "External Systems"
+        User[User Query] --> A
+        RAG["Knowledge Base (FAISS)"] <--> B
+        Sandbox["Local Python (GDAL)"] <--> D
+        Sandbox --> Output["Geospatial Output"]
+    end
+
+    style F fill:#ffcccc,stroke:#cc0000,stroke-width:2px
+```
 
 ## 💻 Tech Stack
 
 | Category          | Technology                                       |
 | ----------------- | ------------------------------------------------ |
-| **Orchestration** | LangChain, LangGraph                             |
+| **Orchestration** | LangGraph, LangChain                             |
 | **LLM Provider** | Groq (Llama 3)                                   |
 | **Knowledge Base**| FAISS, Sentence-Transformers                     |
 | **Geospatial** | GDAL, Python 3                                   |
-| **Backend** | FastAPI, Gunicorn                                |
-| **Deployment** | Docker, Docker Compose                           |
+| **Backend** | FastAPI, Uvicorn                                 |
 | **Frontend** | HTML, CSS, JavaScript (with Leaflet.js for maps) |
 
 ## ⚙️ Getting Started: Running Saarthi Locally
 
-Saarthi is fully containerized with Docker for easy and reliable setup.
+This setup uses a local Python virtual environment.
 
 **Prerequisites:**
+* Python 3.11+
+* Git
+* **GDAL installed on your system.** (This is crucial. The easiest way on Windows is via the [OSGeo4W installer](https://www.osgeo.org/projects/osgeo4w/)).
 
-  * [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
-  * A `.env` file in the project root with your `GROQ_API_KEY`.
+**1. Clone the Repository:**
+```bash
+git clone [https://github.com/NandiniBytes/saarthi-ai.git](https://github.com/NandiniBytes/saarthi-ai.git)
+cd saarthi-ai
+```
 
-**1. Create your Environment File:**
-Create a file named `.env` in the `saarthi_backend` root directory:
+**2. Set Up the Backend Environment:**
+Navigate to the backend directory:
+```bash
+cd saarthi-backend
+```
+Create and activate a Python virtual environment:
+```bash
+# For Windows
+python -m venv venv
+.\venv\Scripts\activate
 
+# For macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+**3. Install Dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+**4. Create your Environment File:**
+Create a file named `.env` inside the `saarthi-backend` directory and add your Groq API key:
 ```
 GROQ_API_KEY="your-groq-api-key-here"
 ```
 
-**2. Build the Knowledge Base:**
+**5. Build the Knowledge Base:**
 The agent needs a vector store of tool documentation. Run the build script once:
-
 ```bash
-# Make sure your Docker daemon is running
-python3 knowledge_base/build_kb.py
+python knowledge_base/build_kb.py
 ```
 
-**3. Launch the Application:**
-Use Docker Compose to build and run the entire backend stack with a single command:
-
+**6. Run the Backend Server:**
 ```bash
-docker-compose up --build
+uvicorn main:app --reload
 ```
+The backend will now be running at `http://127.0.0.1:8000`.
 
-The backend will be available at `http://127.0.0.1:8000`.
-
-**4. Connect via ngrok (Optional for live testing):**
-To connect your deployed frontend to your local backend:
-
+**7. Connect via ngrok (Optional for live testing):**
+To connect your deployed frontend to your local backend, open a new terminal and run:
 ```bash
 ngrok http 8000
 ```
-
 Use the generated forwarding URL in your frontend's API calls.
 
 ## 🔭 Future Roadmap
 
 The Robust Orchestrator is a powerful foundation. Future versions of Saarthi will explore even more advanced agentic architectures:
 
-  * **Hierarchical Multi-Agent System:** A "team" of specialized agents (e.g., a DataScout, a GIS-Processor) managed by a central orchestrator.
-  * **Proactive MCTS Planner:** Using Monte Carlo Tree Search to explore multiple solution paths and proactively choose the most efficient one (e.g., deciding between local processing vs. Google Earth Engine).
-  * **Self-Improving Agent:** An agent that learns from its successes, adding completed workflows back into its knowledge base to solve similar problems faster in the future.
+* **Hierarchical Multi-Agent System:** A "team" of specialized agents (e.g., a DataScout, a GIS-Processor) managed by a central orchestrator.
+* **Proactive MCTS Planner:** Using Monte Carlo Tree Search to explore multiple solution paths and proactively choose the most efficient one.
+* **Self-Improving Agent:** An agent that learns from its successes, adding completed workflows back into its knowledge base to solve similar problems faster in the future.
 
------
+---
 
+<div align="center">
 
+**Built with ❤️ for the future of space technology in India.**
 
-
-<div align="center"> Built with ❤️ for the future of space technology in India. </div>
-
+</div>
